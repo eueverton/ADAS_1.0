@@ -1,0 +1,4 @@
+ultralytics
+opencv-python
+numpy
+playsound==1.2.2

@@ -1,0 +1,65 @@
+{
+    "performance": {
+        "skip_frames": 3,
+        "confidence_threshold": 0.4,
+        "max_risks_buffer": 3,
+        "fps_update_interval": 20
+    },
+    "zones": {
+        "proximity": {
+            "x_min": 1.4,
+            "x_max": 1.4,
+            "y_min": 0.4,
+            "y_max": 0.4,
+            "description": "Zona de proximidade horizontal (parabrisa)"
+        }
+
+    },
+    "risk_config": {
+        "car": {
+            "area_ratio_high": 0.5,
+            "area_ratio_mid": 0.5,
+            "description": "Carros - alertas de proximidade"
+        },
+        "truck": {
+            "area_ratio_high": 0.5,
+            "area_ratio_mid": 0.4,
+            "description": "Caminhões - alertas de proximidade"
+        },
+        "bus": {
+            "area_ratio_high": 0.5,
+            "area_ratio_mid": 0.4,
+            "description": "Ônibus - alertas de proximidade"
+        },
+        "motorcycle": {
+            "area_ratio_high": 0.5,
+            "area_ratio_mid": 0.05,
+            "description": "Motos - alertas de proximidade"
+        },
+        "person": {
+            "area_ratio_high": 0.08,
+            "area_ratio_mid": 0.04,
+            "description": "Pedestres - alertas de proximidade"
+        }
+    },
+    "target_classes": [
+        "car",
+        "truck", 
+        "bus",
+        "motorcycle",
+        "stop sign",
+        "traffic light",
+        "person"
+    ],
+    "features": {
+        "lane_detection": false,
+        "proximity_warnings": true,
+        "audio_alerts": true,
+        "visual_overlays": true
+    },
+    "alerts": {
+        "beep_frequency": 1000,
+        "beep_duration": 120,
+        "debounce_time": 1.0
+    }
+}
