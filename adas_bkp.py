@@ -149,13 +149,11 @@ def decide_risk(cls_name, aratio, proximity_hit, lane_hit):
             return 2, '🚨 PERIGO: Pedestre MUITO perto no parabrisa!'
         if aratio >= RISK_CFG['person']['area_ratio_mid']:
             return 1, '⚠️ Atenção: Pedestre à frente no parabrisa'
-    elif cls_name == 'license plate':
-        return 0, '🚗 Placa de veículo detectada'
     
     # Ignora detecção de faixa para focar apenas no parabrisa
     return -1, ''
 
-def draw_overlay(frame, risks, fps, lane_warning, host_speed=None, proximity_zone_visible=True):
+def draw_overlay(frame, risks, fps, lane_warning, proximity_zone_visible=True):
     """Overlay otimizado APENAS para zona de parabrisa - detecção exclusiva"""
     H, W = frame.shape[:2]
     
@@ -171,9 +169,9 @@ def draw_overlay(frame, risks, fps, lane_warning, host_speed=None, proximity_zon
                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
 
     # Desenha área quadrada central (zona crítica) apenas para referência
-    square_size = int(min(W, H) * 0.35)
+    square_size = int(min(W, H) * 0.25)
     sq_cx = W // 2
-    sq_cy = int(H * 0.55)  # Aumentado de 0.65 para 0.55 para subir o quadrado
+    sq_cy = int(H * 0.65)
     sq1 = (sq_cx - square_size // 2, sq_cy - square_size // 2)
     sq2 = (sq_cx + square_size // 2, sq_cy + square_size // 2)
     cv2.rectangle(frame, sq1, sq2, (0, 0, 255), 2)
@@ -184,15 +182,9 @@ def draw_overlay(frame, risks, fps, lane_warning, host_speed=None, proximity_zon
     cv2.putText(frame, 'SISTEMA FOCADO APENAS NO PARABRISA', (10, H-20), 
                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
     
-    # FPS e velocidade do veículo
+    # FPS e informações
     cv2.putText(frame, f'FPS: {fps:.1f}', (10, 25), 
                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-    
-    # Indicador de velocidade do veículo (km/h)
-    if host_speed is not None:
-        speed_kmh = host_speed * 3.6  # Convert m/s to km/h
-        cv2.putText(frame, f'Velocidade: {speed_kmh:.1f} km/h', (W - 250, 25), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
     
     # Alertas de risco
     msg = ''
@@ -289,7 +281,7 @@ if __name__ == '__main__':
             # Calcula zona quadrada central
             square_size = int(min(W, H) * 0.25)
             sq_cx = W // 2
-            sq_cy = int(H * 0.55)  # Aumentado de 0.65 para 0.55 para subir o quadrado
+            sq_cy = int(H * 0.65)
             sq1 = (sq_cx - square_size // 2, sq_cy - square_size // 2)
             sq2 = (sq_cx + square_size // 2, sq_cy + square_size // 2)
             # Otimização: processa apenas a zona de interesse para melhor FPS
@@ -468,7 +460,7 @@ if __name__ == '__main__':
 
             # Pré-processamento antes do overlay
             frame = preprocess_frame(frame)
-            frame = draw_overlay(frame, risks, fps, lane_warning, host_speed)
+            frame = draw_overlay(frame, risks, fps, lane_warning)
             
             # Alerta sonoro com debounce
             now = time.time()
