@@ -1,17 +1,17 @@
 {
     "performance": {
-        "skip_frames": 3,
-        "confidence_threshold": 0.4,
+    "skip_frames": 3,
+    "confidence_threshold": 0.2,
         "max_risks_buffer": 3,
         "fps_update_interval": 20
     },
     "zones": {
         "proximity": {
-            "x_min": 1.4,
-            "x_max": 1.4,
+            "x_min": 0.1,
+            "x_max": 0.9,
             "y_min": 0.4,
-            "y_max": 0.4,
-            "description": "Zona de proximidade horizontal (parabrisa)"
+            "y_max": 0.9,
+            "description": "Zona de proximidade central reduzida (menos invasiva)"
         }
 
     },
@@ -55,11 +55,13 @@
         "lane_detection": false,
         "proximity_warnings": true,
         "audio_alerts": true,
-        "visual_overlays": true
+        "visual_overlays": true,
+        "windshield_only": true
     },
     "alerts": {
         "beep_frequency": 1000,
         "beep_duration": 120,
-        "debounce_time": 1.0
+        "debounce_time": 1.0,
+        "collision_distance_critical": 2.0
     }
 }
