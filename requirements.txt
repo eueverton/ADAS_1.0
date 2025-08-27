@@ -1,4 +1,6 @@
-ultralytics
+# Dependências do projeto
+pygame
 opencv-python
-numpy
-playsound==1.2.2
+easyocr
+ultralytics
+fontawesome-free
