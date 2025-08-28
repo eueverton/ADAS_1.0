@@ -1,29 +1,142 @@
-# Documentação Completa do Sistema ADAS 1.0
+# 📄 Documentação do Sistema ADAS Avançado
 
-## Visão Geral do Sistema
+## 📋 Índice
+1. [Visão Geral](#visão-geral)
+2. [Funcionalidades](#funcionalidades)
+3. [Instalação e Configuração](#instalação-e-configuração)
+4. [Uso do Sistema](#uso-do-sistema)
+5. [Reconhecimento de Placas](#reconhecimento-de-placas)
+6. [Sistema de Alertas](#sistema-de-alertas)
+7. [Configuração Avançada](#configuração-avançada)
+8. [Exemplos de Uso](#exemplos-de-uso)
+9. [Solução de Problemas](#solução-de-problemas)
 
-O Sistema ADAS (Advanced Driver Assistance System) é uma solução de assistência ao condutor que utiliza visão computacional para detectar objetos, estimar distâncias e gerar alertas de segurança em tempo real.
+## 🔍 Visão Geral
 
-## Arquitetura do Sistema
+O **Sistema ADAS Avançado** é uma solução de Assistência ao Condutor que utiliza visão computacional para detectar e alertar sobre potenciais riscos na estrada. O sistema combina detecção de objetos com YOLOv8 e reconhecimento óptico de caracteres (OCR) para fornecer alertas em tempo real.
 
-### Módulos Principais
+## 🚀 Funcionalidades
 
-1. **adas.py** - Script principal do sistema
-2. **icons.py** - Sistema de ícones personalizados
-3. **config_adas.json** - Configurações do sistema
-4. **requirements.txt** - Dependências do projeto
+### ✅ Detecção de Veículos
+- Carros, caminhões, ônibus e motocicletas
+- Estimativa de distância em tempo real
+- Alertas de proximidade e risco de colisão
 
-### Fluxo de Processamento
+### 🛑 Reconhecimento de Placas de Trânsito
+- **Placas de PARE**: Detecção automática com aviso "PARE"
+- **Semáforos**: Identificação com aviso "SEMAFORO"  
+- **Limites de Velocidade**: OCR para números (30, 40, 50, 60, 80, 100, 120 km/h)
+- **Placas Regulatórias**: Reconhecimento de "PROIBIDO", "PREFERENCIAL"
 
-1. Captura de vídeo (webcam/arquivo/stream)
-2. Pré-processamento do frame
-3. Detecção de objetos com YOLOv8
-4. Análise de risco e proximidade
-5. Geração de alertas visuais e sonoros
-6. Renderização do overlay com informações
+### 📊 Sistema de Alertas Visuais
+- Overlay com informações em tempo real
+- Avisos coloridos por nível de risco
+- Contador regressivo de 5 segundos para placas detectadas
+- Indicador de velocidade do veículo
 
-## Configuração (config_adas.json)
+### 🔊 Alertas Sonoros
+- Bip sonoro para alertas de alto risco
+- Sistema anti-spam com intervalo mínimo de 1 segundo
 
+## 🛠️ Instalação e Configuração
+
+### Pré-requisitos
+```bash
+# Instalar dependências
+pip install ultralytics opencv-python pygame easyocr numpy
+```
+
+### Estrutura de Arquivos
+```
+ADAS_1.0/
+├── adas.py              # Versão original em inglês
+├── adas_pt.py           # Versão traduzida para português
+├── config_adas.json     # Arquivo de configuração
+├── icons.py             # Sistema de ícones
+├── beep.wav             # Som de alerta (opcional)
+├── test_*.py            # Testes unitários
+└── DOCUMENTACAO_ADAS.md # Esta documentação
+```
+
+## 🎮 Uso do Sistema
+
+### Comando Básico
+```bash
+# Usar webcam
+python adas_pt.py --fonte 0
+
+# Usar arquivo de vídeo
+python adas_pt.py --fonte dashcam2.mp4
+
+# Com configurações personalizadas
+python adas_pt.py --fonte 0 --confianca 0.5 --pular-frames 2
+```
+
+### Parâmetros de Linha de Comando
+| Parâmetro | Descrição | Valor Padrão |
+|-----------|-----------|--------------|
+| `--fonte` | Fonte de vídeo (0=webcam, caminho do arquivo) | None |
+| `--confianca` | Confiança mínima para detecção | 0.4 |
+| `--modelo` | Modelo YOLO a ser usado | yolov8n.pt |
+| `--pular-frames` | Pular frames para melhorar FPS | 3 |
+| `--atraso-video` | Delay entre frames (ms) | 1 |
+
+### Controles Durante a Execução
+- **ESC**: Sair do programa
+- **P**: Pausar/Despausar
+- **L**: Ativar/Desativar detecção de faixa
+- **H**: Mostrar ajuda
+
+## 🔍 Reconhecimento de Placas
+
+### Tipos de Placas Suportadas
+1. **Placas de PARE**
+   - Detecção automática via YOLO
+   - Aviso: "PARE" por 5 segundos
+
+2. **Semáforos**
+   - Detecção automática via YOLO  
+   - Aviso: "SEMAFORO" por 5 segundos
+
+3. **Limites de Velocidade**
+   - OCR para números: 30, 40, 50, 60, 80, 90, 100, 110, 120
+   - Formato: "LIMITE Xkm/h"
+
+4. **Placas Regulatórias**
+   - OCR para texto: "PROIBIDO", "PARE", "PREFERENCIAL"
+   - Avisos correspondentes ao texto detectado
+
+### Processamento de OCR
+```python
+# Exemplo do fluxo de reconhecimento
+1. Detecção YOLO → "stop sign"
+2. Função reconhecer_placa_transito() → "PARE"
+3. Adiciona aos avisos ativos por 5 segundos
+4. Exibe overlay com contador regressivo
+```
+
+## ⚠️ Sistema de Alertas
+
+### Níveis de Risco
+| Nível | Cor | Descrição |
+|-------|-----|-----------|
+| 2 | 🔴 Vermelho | Perigo iminente |
+| 1 | 🟡 Amarelo | Atenção necessária |
+| 0 | 🔵 Azul | Informação |
+
+### Zonas de Detecção
+- **Zona do Parabrisa**: Área retangular amarela
+- **Zona Crítica**: Área quadrada central vermelha
+- Apenas objetos nestas zonas geram alertas
+
+### Alertas de Velocidade
+- Verde: ≤ 80 km/h
+- Amarelo: 81-100 km/h  
+- Vermelho: > 100 km/h
+
+## ⚙️ Configuração Avançada
+
+### Arquivo config_adas.json
 ```json
 {
   "target_classes": ["car", "truck", "bus", "motorcycle", "stop sign", "traffic light", "person", "license plate"],
@@ -31,11 +144,11 @@ O Sistema ADAS (Advanced Driver Assistance System) é uma solução de assistên
     "proximity": {"x_min": 0.2, "x_max": 0.8, "y_min": 0.2, "y_max": 0.8}
   },
   "risk_config": {
-    "car": {"area_ratio_high": 0.05, "area_ratio_mid": 0.08},
-    "truck": {"area_ratio_high": 0.08, "area_ratio_mid": 0.01},
-    "bus": {"area_ratio_high": 0.25, "area_ratio_mid": 0.12},
-    "motorcycle": {"area_ratio_high": 0.1, "area_ratio_mid": 0.05},
-    "person": {"area_ratio_high": 0.08, "area_ratio_mid": 0.04}
+    "car": {"area_ratio_high": 0.05, "area_ratio_mid": 0.08, "length": 0.5},
+    "truck": {"area_ratio_high": 0.08, "area_ratio_mid": 0.01, "length": 0.5},
+    "bus": {"area_ratio_high": 0.25, "area_ratio_mid": 0.12, "length": 0.5},
+    "motorcycle": {"area_ratio_high": 0.1, "area_ratio_mid": 0.05, "length": 0.5},
+    "person": {"area_ratio_high": 0.08, "area_ratio_mid": 0.04, "length": 0.5}
   },
   "camera_focal_length": 300,
   "alerts": {
@@ -44,195 +157,108 @@ O Sistema ADAS (Advanced Driver Assistance System) é uma solução de assistên
 }
 ```
 
-## Funções Principais
+### Personalização
+- **target_classes**: Classes que o sistema deve detectar
+- **zones**: Áreas de interesse na tela
+- **risk_config**: Limiares para diferentes tipos de risco
+- **camera_focal_length**: Calibrar para sua câmera específica
 
-### 1. `load_config(path='config_adas.json')`
-Carrega as configurações do sistema a partir do arquivo JSON.
+## 🧪 Exemplos de Uso
 
-### 2. `preprocess_frame(frame)`
-Realça contraste e nitidez do frame para melhor detecção.
-
-### 3. `estimate_distance(cls_name, y1, y2)`
-Estima a distância real do objeto usando geometria de câmera.
-
-### 4. `in_proximity_zone(x1, y1, x2, y2, W, H)`
-Verifica se o objeto está na zona de risco (parabrisa).
-
-### 5. `area_ratio(x1, y1, x2, y2, W, H)`
-Calcula a proporção da área do objeto em relação ao frame.
-
-### 6. `decide_risk(cls_name, aratio, proximity_hit)`
-Decide o nível de risco baseado no tipo de objeto e proximidade.
-
-### 7. `draw_overlay(frame, risks, fps, lane_warning, host_speed, proximity_zone_visible)`
-Renderiza o overlay com informações, alertas e ícones.
-
-### 8. `beep()`
-Gera alerta sonoro usando pygame.
-
-## Sistema de Ícones Personalizados
-
-### Classe `ADASIcons`
-Gerencia a criação e acesso aos ícones visuais.
-
-**Métodos de criação:**
-- `_create_warning_icon()` - Ícone de atenção (amarelo)
-- `_create_danger_icon()` - Ícone de perigo (vermelho) 
-- `_create_info_icon()` - Ícone informativo (azul)
-- `_create_car_icon()` - Ícone de carro
-- `_create_motorcycle_icon()` - Ícone de moto
-- `_create_truck_icon()` - Ícone de caminhão
-- `_create_bus_icon()` - Ícone de ônibus
-- `_create_person_icon()` - Ícone de pedestre
-- `_create_stop_sign_icon()` - Ícone de placa de pare
-- `_create_traffic_light_icon()` - Ícone de semáforo
-
-## Parâmetros de Execução
-
-### Argumentos de Linha de Comando
-
+### Teste com Webcam
 ```bash
---source          # Fonte de vídeo (0=webcam, caminho, URL)
---conf            # Confiança mínima para detecção (0.0-1.0)
---model           # Modelo YOLO a usar (padrão: yolov8n.pt)
---show-names      # Classes específicas para mostrar
---proximity-x-min # Limite esquerdo da zona de proximidade
---proximity-x-max # Limite direito da zona de proximidade  
---proximity-y-min # Limite superior da zona de proximidade
---proximity-y-max # Limite inferior da zona de proximidade
---skip-frames     # Pular frames para melhorar FPS
---lane-detection  # Ativar detecção de mudança de faixa
---video-delay     # Tempo de espera entre frames (ms)
+python adas_pt.py --fonte 0 --confianca 0.4 --pular-frames 3
 ```
 
-### Exemplos de Uso
-
+### Teste com Arquivo de Vídeo  
 ```bash
-# Webcam com configuração padrão
-python adas.py
-
-# Vídeo arquivo com alta precisão
-python adas.py --source Dashcam.mp4 --conf 0.4
-
-# Otimizado para performance
-python adas.py --skip-frames 3 --video-delay 30
-
-# Zona de risco personalizada
-python adas.py --proximity-x-min 0.1 --proximity-x-max 0.9 --proximity-y-min 0.4 --proximity-y-max 0.8
+python adas_pt.py --fonte dashcam2.mp4 --atraso-video 30
 ```
 
-## Sistema de Alertas
-
-### Níveis de Risco
-
-1. **Nível 0**: Informativo (semáforos detectados)
-2. **Nível 1**: Atenção (objetos próximos)
-3. **Nível 2**: Perigo (risco de colisão iminente)
-
-### Tipos de Alertas
-
-- **Proximidade**: Objetos na zona de risco
-- **Aproximação rápida**: Objetos se aproximando rapidamente
-- **Colisão iminente**: Distância crítica atingida
-- **Placas detectadas**: OCR de placas de veículos
-
-## Estrutura de Dados
-
-### Variáveis Globais
-
-```python
-VEHICLE_HISTORY = {}        # Histórico de distâncias por objeto
-CONFIG = {}                 # Configurações carregadas
-TARGET_NAMES = set()        # Classes alvo para detecção
-PROXIMITY_ZONE = {}         # Zona de proximidade configurada
-RISK_CFG = {}               # Configurações de risco
-RECENT_RISKS = deque()      # Histórico recente de riscos
-VEHICLE_LENGTH = {}         # Comprimentos médios de veículos
-FOCAL_LENGTH = 300          # Distância focal da câmera
-COLLISION_DISTANCE_CRITICAL = 0.7  # Distância crítica para colisão
-```
-
-## Dependências
-
-### Bibliotecas Principais
-
-```python
-ultralytics    # YOLOv8 para detecção de objetos
-opencv-python  # Processamento de imagem e vídeo
-numpy          # Computação numérica
-pygame         # Sistema de áudio
-easyocr        # OCR para placas
-```
-
-### Instalação
-
+### Alta Performance
 ```bash
-pip install ultralytics opencv-python numpy pygame easyocr
+python adas_pt.py --fonte 0 --pular-frames 5 --confianca 0.6
 ```
 
-## Performance e Otimização
+### Baixa Latência
+```bash
+python adas_pt.py --fonte 0 --pular-frames 1 --confianca 0.3
+```
 
-### Técnicas Implementadas
-
-1. **Skip Frames**: Processa apenas 1 a cada N frames
-2. **Pré-processamento**: Realce de contraste para melhor detecção
-3. **Zona de Interesse**: Foca apenas na área relevante do frame
-4. **Debouncing**: Evita alertas sonoros excessivos
-
-### Métricas de Performance
-
-- FPS: 15-30 (dependendo da configuração)
-- Latência: < 100ms
-- Uso de CPU: Moderado
-- Uso de GPU: Alto (se disponível)
-
-## Troubleshooting
+## 🔧 Solução de Problemas
 
 ### Problemas Comuns
 
 1. **Webcam não detectada**
-   - Verifique permissões do sistema
-   - Teste com `--source 0`
+   ```bash
+   # Verificar se a webcam está funcionando
+   python -c "import cv2; print(cv2.VideoCapture(0).isOpened())"
+   ```
 
 2. **Performance baixa**
-   - Aumente `--skip-frames`
-   - Reduza `--conf`
-   - Use modelo menor (yolov8n.pt)
+   ```bash
+   # Aumentar pulo de frames
+   python adas_pt.py --pular-frames 5
+   ```
 
-3. **Alertas sonoros não funcionam**
-   - Verifique arquivo `beep.wav` no diretório
-   - Teste com pygame instalado
+3. **Muitos falsos positivos**
+   ```bash
+   # Aumentar confiança mínima
+   python adas_pt.py --confianca 0.6
+   ```
 
-4. **Detecção imprecisa**
-   - Ajuste `FOCAL_LENGTH` no config_adas.json
-   - Calibre `VEHICLE_LENGTH` para seu ambiente
+4. **OCR não funcionando**
+   - Verificar se easyocr está instalado corretamente
+   - Testar com imagens mais claras e bem iluminadas
 
-## Próximas Melhorias
+### Otimização de Performance
 
-1. Sistema de logging de eventos
-2. Exportação de relatórios em CSV/JSON
-3. Modo noturno com ajuste automático
-4. Integração com GPS e sensores
-5. Dashboard web para monitoramento
-6. Machine learning para previsão de trajetórias
+- **CPU**: Usar `--pular-frames 3-5`
+- **GPU**: Instalar CUDA para melhor performance do EasyOCR
+- **Modelo**: Usar yolov8s.pt para melhor precisão
 
-## Contribuição
+## 📊 Testes e Validação
 
-Para contribuir com o projeto:
+### Testes Unitários
+```bash
+# Testar reconhecimento de placas de trânsito
+python test_traffic_sign.py
 
-1. Faça fork do repositório
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
-5. Abra um Pull Request
+# Testar reconhecimento de placas de veículos  
+python test_license_plate.py
 
-## Licença
+# Teste de integração completo
+python test_adas_integration.py
+```
 
-Este projeto está sob licença MIT. Veja o arquivo LICENSE para detalhes.
+### Validação com Dados Reais
+1. Coletar vídeos de diferentes condições
+2. Testar com várias placas de trânsito
+3. Validar precisão do OCR
+4. Ajustar parâmetros conforme necessário
 
-## Contato
+## 📈 Próximos Passos
 
-Para dúvidas e sugestões:
-- Email: [seu-email]
-- GitHub: [seu-usuario]
-- Documentação: [link-para-docs]
+### Melhorias Futuras
+- [ ] Suporte a mais tipos de placas de trânsito
+- [ ] Detecção de pedestres cruzando a rua
+- [ ] Sistema de alerta de sonolência do motorista
+- [ ] Integração com GPS para alertas contextuais
+- [ ] Modo noturno com ajustes automáticos
+
+### Personalização
+- Adicionar novos tipos de placas no código OCR
+- Ajustar limiares de risco no config_adas.json
+- Customizar overlay visual conforme necessidade
+
+---
+
+## 📞 Suporte
+
+Para dúvidas ou problemas:
+1. Verificar a documentação acima
+2. Testar com os exemplos fornecidos
+3. Ajustar parâmetros conforme seu hardware
+4. Verificar logs de erro no console
+
+**⚠️ Nota**: Este é um sistema de assistência e não substitui a atenção do motorista. Use sempre com cautela e conforme as leis de trânsito locais.

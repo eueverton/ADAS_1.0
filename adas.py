@@ -25,6 +25,69 @@ def beep():
     except Exception as e:
         pass
 
+def recognize_license_plate(frame, x1, y1, x2, y2):
+    """Recognizes license plates in the given frame."""
+    try:
+        reader = easyocr.Reader(['pt', 'en'], gpu=True)
+        crop = frame[y1:y2, x1:x2]
+        
+        # Preprocessing for better OCR results
+        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+        results_plate = reader.readtext(thresh)
+        
+        if results_plate:
+            plate = results_plate[0][1]
+            return plate
+    except Exception as e:
+        print(f"Error recognizing license plate: {e}")
+    return None
+
+def recognize_traffic_sign(frame, x1, y1, x2, y2, cls_name):
+    """Recognizes traffic signs and extracts information like speed limits."""
+    try:
+        # For stop signs and traffic lights, we don't need OCR
+        if cls_name == 'stop sign':
+            return 'PARE'
+        elif cls_name == 'traffic light':
+            return 'SEMAFORO'
+        
+        # For other signs, use OCR to detect numbers (speed limits)
+        reader = easyocr.Reader(['pt', 'en'], gpu=True)
+        crop = frame[y1:y2, x1:x2]
+        
+        # Enhanced preprocessing for sign recognition
+        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresh = cv2.threshold(blurred, 120, 255, cv2.THRESH_BINARY)
+        
+        results = reader.readtext(thresh)
+        
+        if results:
+            text = results[0][1].upper()
+            
+            # Look for speed limit patterns (numbers like 30, 40, 50, 60, 80, 100, 120)
+            import re
+            speed_match = re.search(r'\b(30|40|50|60|80|90|100|110|120)\b', text)
+            if speed_match:
+                speed = speed_match.group(1)
+                return f'LIMITE {speed}km/h'
+            
+            # Look for other common traffic sign text
+            if any(word in text for word in ['PROIBIDO', 'PROIBIDA']):
+                return 'PROIBIDO'
+            elif any(word in text for word in ['PARE', 'STOP']):
+                return 'PARE'
+            elif any(word in text for word in ['PREFERENCIAL']):
+                return 'PREFERENCIAL'
+                
+    except Exception as e:
+        print(f"Error recognizing traffic sign: {e}")
+    return None
+
+# Global variables for traffic sign warnings
+TRAFFIC_SIGN_WARNINGS = {}
+TRAFFIC_SIGN_DURATION = 5  # seconds
 
 # Carrega parâmetros do config_adas.json
 def load_config(path='config_adas.json'):
@@ -230,6 +293,35 @@ def draw_overlay(frame, risks, fps, lane_warning, host_speed=None, proximity_zon
         cv2.putText(frame, text, (40, y_offset), 
                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
         y_offset += 25
+    
+    # Display traffic sign warnings for 5 seconds
+    current_time = time.time()
+    active_warnings = []
+    
+    # Clean up expired warnings
+    for sign_info, detection_time in list(TRAFFIC_SIGN_WARNINGS.items()):
+        if current_time - detection_time > TRAFFIC_SIGN_DURATION:
+            del TRAFFIC_SIGN_WARNINGS[sign_info]
+        else:
+            active_warnings.append(sign_info)
+    
+    # Display active traffic sign warnings
+    if active_warnings:
+        warning_y = H - 150
+        for warning in active_warnings:
+            # Draw warning background
+            cv2.rectangle(frame, (W//2 - 200, warning_y - 30), (W//2 + 200, warning_y + 10), (0, 165, 255), -1)
+            
+            # Draw warning text
+            cv2.putText(frame, f'🚸 {warning}', (W//2 - 190, warning_y), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            
+            # Draw countdown timer
+            time_left = TRAFFIC_SIGN_DURATION - (current_time - TRAFFIC_SIGN_WARNINGS[warning])
+            cv2.putText(frame, f'{time_left:.1f}s', (W//2 + 150, warning_y), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            
+            warning_y -= 40
     
     # Alerta principal com destaque e ícone grande
     if lvl >= 0 and msg:
@@ -495,17 +587,19 @@ if __name__ == '__main__':
                             color = (0, 0, 255)
                             thickness = 4
 
-                    # OCR para placas
+                    # License plate recognition for detected license plates
                     if cls_name == 'license plate':
-                        try:
-                            reader = easyocr.Reader(['pt', 'en'], gpu=True)
-                            crop = frame[y1:y2, x1:x2]
-                            results_plate = reader.readtext(crop)
-                            if results_plate:
-                                plate = results_plate[0][1]
-                                label += f' | Placa: {plate}'
-                        except Exception as e:
-                            pass
+                        plate = recognize_license_plate(frame, x1, y1, x2, y2)
+                        if plate:
+                            label += f' | Placa: {plate}'
+                    
+                    # Traffic sign recognition for stop signs and traffic lights
+                    if cls_name in ['stop sign', 'traffic light']:
+                        sign_info = recognize_traffic_sign(frame, x1, y1, x2, y2, cls_name)
+                        if sign_info:
+                            label += f' | {sign_info}'
+                            # Add to warnings for 5 seconds
+                            TRAFFIC_SIGN_WARNINGS[sign_info] = time.time()
 
                     cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness)
                     cv2.putText(frame, label, (x1, max(20, y1-6)), 

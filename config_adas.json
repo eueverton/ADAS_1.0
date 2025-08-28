@@ -1,19 +1,20 @@
 {
     "performance": {
-    "skip_frames": 3,
-    "confidence_threshold": 0.2,
+        "skip_frames": 3,
+        "confidence_threshold": 0.2,
         "max_risks_buffer": 3,
-        "fps_update_interval": 20
+        "fps_update_interval": 20,
+        "ocr_confidence_threshold": 0.5,
+        "traffic_light_min_area": 100
     },
     "zones": {
         "proximity": {
             "x_min": 0.1,
             "x_max": 0.9,
-            "y_min": 0.4,
+            "y_min": 0.1,
             "y_max": 0.9,
             "description": "Zona de proximidade central reduzida (menos invasiva)"
         }
-
     },
     "risk_config": {
         "car": {
@@ -40,6 +41,11 @@
             "area_ratio_high": 0.08,
             "area_ratio_mid": 0.04,
             "description": "Pedestres - alertas de proximidade"
+        },
+        "license plate": {
+            "area_ratio_high": 0.02,
+            "area_ratio_mid": 0.01,
+            "description": "Placas - reconhecimento OCR"
         }
     },
     "target_classes": [
@@ -49,19 +55,37 @@
         "motorcycle",
         "stop sign",
         "traffic light",
-        "person"
+        "person",
+        "license plate"
     ],
     "features": {
         "lane_detection": false,
         "proximity_warnings": true,
         "audio_alerts": true,
         "visual_overlays": true,
-        "windshield_only": true
+        "windshield_only": true,
+        "license_plate_recognition": true,
+        "traffic_light_state_detection": true
     },
     "alerts": {
         "beep_frequency": 1000,
         "beep_duration": 120,
         "debounce_time": 1.0,
-        "collision_distance_critical": 2.0
+        "collision_distance_critical": 2.0,
+        "red_light_alert": true,
+        "yellow_light_warning": true
+    },
+    "ocr": {
+        "languages": ["pt", "en"],
+        "gpu_enabled": true,
+        "min_confidence": 0.5,
+        "preprocess_enabled": true
+    },
+    "traffic_light": {
+        "red_threshold": 0.4,
+        "yellow_threshold": 0.3,
+        "green_threshold": 0.4,
+        "min_brightness": 50,
+        "state_persistence": 5
     }
 }
