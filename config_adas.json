@@ -9,27 +9,27 @@
     },
     "zones": {
         "proximity": {
-            "x_min": 0.1,
-            "x_max": 0.9,
-            "y_min": 0.1,
-            "y_max": 0.9,
-            "description": "Zona de proximidade central reduzida (menos invasiva)"
+            "x_min": 0.2,
+            "x_max": 0.8,
+            "y_min": 0.2,
+            "y_max": 0.8,
+            "description": "Zona de proximidade otimizada para HD - mais precisa"
         }
     },
     "risk_config": {
         "car": {
-            "area_ratio_high": 0.5,
-            "area_ratio_mid": 0.5,
-            "description": "Carros - alertas de proximidade"
+            "area_ratio_high": 0.15,
+            "area_ratio_mid": 0.08,
+            "description": "Carros - alertas de proximidade otimizados para HD"
         },
         "truck": {
-            "area_ratio_high": 0.5,
-            "area_ratio_mid": 0.4,
+            "area_ratio_high": 0.9,
+            "area_ratio_mid": 0.9,
             "description": "Caminhões - alertas de proximidade"
         },
         "bus": {
-            "area_ratio_high": 0.5,
-            "area_ratio_mid": 0.4,
+            "area_ratio_high": 0.9,
+            "area_ratio_mid": 0.9,
             "description": "Ônibus - alertas de proximidade"
         },
         "motorcycle": {
@@ -86,6 +86,31 @@
         "yellow_threshold": 0.3,
         "green_threshold": 0.4,
         "min_brightness": 50,
-        "state_persistence": 5
+        "state_persistence": 5,
+        "state_detection_enabled": true
+    },
+    "pedestrian": {
+        "full_screen_detection": true,
+        "movement_filter_enabled": true,
+        "min_confidence": 0.3,
+        "alert_distance": 5.0
+    },
+    "license_plate": {
+        "temporary_display_duration": 3,
+        "enhanced_ocr": true,
+        "min_confidence": 0.6
+    },
+    "traffic_sign": {
+        "enhanced_recognition": true,
+        "additional_types": ["yield", "no_entry", "one_way"],
+        "temporary_display_duration": 5
+    },
+    "hd_settings": {
+        "focal_length_hd": 600,
+        "ocr_resize_factor": 2.0,
+        "contrast_alpha": 1.2,
+        "brightness_beta": 20,
+        "sharpen_kernel": [[0, -1, 0], [-1, 5, -1], [0, -1, 0]],
+        "description": "Parâmetros otimizados para vídeo HD"
     }
 }
